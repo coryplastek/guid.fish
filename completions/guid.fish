@@ -10,5 +10,8 @@ complete -c guid -n '__fish_use_subcommand' -a to-base64 -d 'Convert to base64 f
 complete -c guid -n '__fish_use_subcommand' -a to-ldap   -d 'Convert to LDAP escaped format (\\xx\\xx...)'
 complete -c guid -n '__fish_use_subcommand' -a to-all    -d 'Show all formats at once'
 
+# --help flag
+complete -c guid -l help -s h -d 'Show help'
+
 # --json flag (only for to-all)
 complete -c guid -n '__fish_seen_subcommand_from to-all' -l json -d 'Output as JSON'

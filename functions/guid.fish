@@ -1,34 +1,30 @@
-function guid -d 'Convert between AD GUID formats: guid, hex, base64, ldap
-Subcommands: to-guid, to-hex, to-base64, to-ldap, to-all
-Auto-detects input format from the value.
+function guid -d 'Convert between AD GUID formats'
 
-Examples:
-  guid to-base64 47c61998-0dc9-46d2-aa81-a4079d691b10
-  guid to-guid "mBnGR8kN0kaqgaQHnWkbEA=="
-  guid to-hex "mBnGR8kN0kaqgaQHnWkbEA=="
-  guid to-ldap 47c61998-0dc9-46d2-aa81-a4079d691b10
-  guid to-all 47c61998-0dc9-46d2-aa81-a4079d691b10
-  guid to-all --json "mBnGR8kN0kaqgaQHnWkbEA=="
-  echo 47c61998-0dc9-46d2-aa81-a4079d691b10 | guid to-base64'
+    argparse h/help j/json -- $argv
+    or return 1
 
-    if test (count $argv) -lt 1
-        echo "usage: guid <to-guid|to-hex|to-base64|to-ldap|to-all> [--json] <value>" >&2
-        echo "       echo <value> | guid <to-guid|to-hex|to-base64|to-ldap|to-all> [--json]" >&2
-        return 1
+    # Show help if --help/-h is passed, or if no arguments and no piped input
+    if set -q _flag_help; or begin; test (count $argv) -lt 1; and isatty stdin; end
+        echo "Convert between AD GUID formats: guid, hex, base64, ldap"
+        echo "Subcommands: to-guid, to-hex, to-base64, to-ldap, to-all"
+        echo "Auto-detects input format from the value."
+        echo
+        echo "Usage: guid <to-guid|to-hex|to-base64|to-ldap|to-all> [--json] <value>"
+        echo "       echo <value> | guid <to-guid|to-hex|to-base64|to-ldap|to-all> [--json]"
+        echo
+        echo "Examples:"
+        echo '  guid to-base64 47c61998-0dc9-46d2-aa81-a4079d691b10'
+        echo '  guid to-guid "mBnGR8kN0kaqgaQHnWkbEA=="'
+        echo '  guid to-hex "mBnGR8kN0kaqgaQHnWkbEA=="'
+        echo '  guid to-ldap 47c61998-0dc9-46d2-aa81-a4079d691b10'
+        echo '  guid to-all 47c61998-0dc9-46d2-aa81-a4079d691b10'
+        echo '  guid to-all --json "mBnGR8kN0kaqgaQHnWkbEA=="'
+        echo '  echo 47c61998-0dc9-46d2-aa81-a4079d691b10 | guid to-base64'
+        return 0
     end
 
     set -l subcmd $argv[1]
-    set -l json_flag 0
-    set -l value
-
-    # Parse remaining args after subcommand
-    for arg in $argv[2..]
-        if test "$arg" = --json
-            set json_flag 1
-        else
-            set value $arg
-        end
-    end
+    set -l value $argv[2]
 
     # If no value from args, read from stdin
     if test -z "$value"
@@ -36,7 +32,7 @@ Examples:
     end
 
     # --json is only valid with to-all
-    if test $json_flag -eq 1 -a "$subcmd" != to-all
+    if set -q _flag_json; and test "$subcmd" != to-all
         echo "guid: --json is only supported with the to-all subcommand" >&2
         return 1
     end
@@ -118,7 +114,7 @@ Examples:
             end
             set out_ldap (__guid_hex_octet_to_ldap $out_hex)
 
-            if test $json_flag -eq 1
+            if set -q _flag_json
                 echo "{"
                 echo "  \"guid\": \"$out_guid\","
                 echo "  \"hex\": \"$out_hex\","
