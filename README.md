@@ -32,10 +32,27 @@ Note that the hex octet and base64 formats reflect AD's mixed-endian byte order.
 ## Usage
 
 ```fish
+guid <value>
 guid <subcommand> <value>
 ```
 
 The input format is auto-detected. Accepts a value as an argument or from stdin via pipe.
+
+When no subcommand is given, `guid` defaults to `to-all` — showing all four format representations:
+
+```fish
+guid 47c61998-0dc9-46d2-aa81-a4079d691b10
+# guid:   47c61998-0dc9-46d2-aa81-a4079d691b10
+# hex:    9819c647c90dd246aa81a4079d691b10
+# base64: mBnGR8kN0kaqgaQHnWkbEA==
+# ldap:   \98\19\c6\47\c9\0d\d2\46\aa\81\a4\07\9d\69\1b\10
+
+echo "mBnGR8kN0kaqgaQHnWkbEA==" | guid
+# (same output)
+
+guid --json 47c61998-0dc9-46d2-aa81-a4079d691b10
+# { "guid": "...", "hex": "...", "base64": "...", "ldap": "..." }
+```
 
 ### Subcommands
 

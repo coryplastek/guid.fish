@@ -6,25 +6,43 @@ function guid -d 'Convert between AD GUID formats'
     # Show help if --help/-h is passed, or if no arguments and no piped input
     if set -q _flag_help; or begin; test (count $argv) -lt 1; and isatty stdin; end
         echo "Convert between AD GUID formats: guid, hex, base64, ldap"
-        echo "Subcommands: to-guid, to-hex, to-base64, to-ldap, to-all"
         echo "Auto-detects input format from the value."
+        echo "Defaults to showing all formats when no subcommand is given."
         echo
-        echo "Usage: guid <to-guid|to-hex|to-base64|to-ldap|to-all> [--json] <value>"
-        echo "       echo <value> | guid <to-guid|to-hex|to-base64|to-ldap|to-all> [--json]"
+        echo "Usage: guid [--json] <value>"
+        echo "       guid <to-guid|to-hex|to-base64|to-ldap|to-all> [--json] <value>"
+        echo "       echo <value> | guid [subcommand] [--json]"
+        echo
+        echo "Subcommands: to-guid, to-hex, to-base64, to-ldap, to-all"
         echo
         echo "Examples:"
+        echo '  guid 47c61998-0dc9-46d2-aa81-a4079d691b10'
+        echo '  guid --json "mBnGR8kN0kaqgaQHnWkbEA=="'
+        echo '  echo 47c61998-0dc9-46d2-aa81-a4079d691b10 | guid'
         echo '  guid to-base64 47c61998-0dc9-46d2-aa81-a4079d691b10'
-        echo '  guid to-guid "mBnGR8kN0kaqgaQHnWkbEA=="'
-        echo '  guid to-hex "mBnGR8kN0kaqgaQHnWkbEA=="'
-        echo '  guid to-ldap 47c61998-0dc9-46d2-aa81-a4079d691b10'
-        echo '  guid to-all 47c61998-0dc9-46d2-aa81-a4079d691b10'
         echo '  guid to-all --json "mBnGR8kN0kaqgaQHnWkbEA=="'
         echo '  echo 47c61998-0dc9-46d2-aa81-a4079d691b10 | guid to-base64'
         return 0
     end
 
-    set -l subcmd $argv[1]
-    set -l value $argv[2]
+    set -l valid_subcmds to-guid to-hex to-base64 to-ldap to-all
+    set -l subcmd
+    set -l value
+
+    if contains -- $argv[1] $valid_subcmds
+        # Explicit subcommand
+        set subcmd $argv[1]
+        set value $argv[2]
+    else if string match -rq '^to-' -- $argv[1]
+        # Starts with to- but not valid — subcommand typo
+        echo "guid: unknown subcommand '$argv[1]'" >&2
+        echo "  valid subcommands: to-guid, to-hex, to-base64, to-ldap, to-all" >&2
+        return 1
+    else
+        # No subcommand — treat $argv[1] as value, default to to-all
+        set subcmd to-all
+        set value $argv[1]
+    end
 
     # If no value from args, read from stdin
     if test -z "$value"
